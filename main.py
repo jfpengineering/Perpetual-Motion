@@ -33,7 +33,7 @@ from pidev.stepper import stepper
 from pidev.Cyprus_Commands import Cyprus_Commands_RPi as cyprus
 
 s0 = stepper(port=0, micro_steps=32, hold_current=20, run_current=20, accel_current=20, deaccel_current=20,
-             steps_per_unit=200, speed=8)
+             steps_per_unit=200, speed=3)
 
 # ////////////////////////////////////////////////////////////////
 # //                      GLOBAL VARIABLES                      //
@@ -70,7 +70,6 @@ cyprus.open_spi()
 # //                    SLUSH/HARDWARE SETUP                    //
 # ////////////////////////////////////////////////////////////////
 sm = ScreenManager()
-ramp = stepper(port = 0, speed = INIT_RAMP_SPEED)
 
 # ////////////////////////////////////////////////////////////////
 # //                       MAIN FUNCTIONS                       //
@@ -110,31 +109,47 @@ class MainScreen(Screen):
         print("Turn on and off staircase here")
         
     def toggleRamp(self):
-        s0.run(1, 500)
-        sleep(11)
+        # s0.start_relative_move(29)
+        # while s0.is_busy():
+        #     sleep(.1)
+        # s0.go_until_press(0,40000)
+        s0.start_relative_move(1.5)
+        sleep(.5)
+        while s0.get_position_in_units() < 29:
+            s0.go_until_press(1, 10000)
+            sleep(.1)
         s0.stop()
-        sleep(.25)
-        s0.run(0, 700)
-        sleep(8)
-        s0.stop()
-        print("Move ramp up and down here")
+        #s0.go_to_position_threaded(57.669375)
+        #sleep(10)
+        #s0.go_to_position_threaded(0.0)
+        #s0.run(1, 500)
+        #sleep(11)
+        #s0.stop()
+        #s0.get_position_in_units()
+        #sleep(.25)
+        #s0.run(0, 700)
+        #sleep(8)
+        #s0.stop()
+        #print("Move ramp up and down here")
         
     def auto(self):
-        s0.run(1, 500)
-        sleep(11)
-        s0.stop()
-        sleep(.25)
-        s0.run(0, 700)
-        sleep(1)
-        cyprus.set_pwm_values(1, period_value=100000, compare_value=25000, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
-        sleep(7)
-        s0.stop()
-        sleep(3.5)
-        cyprus.set_pwm_values(1, period_value=100000, compare_value=0, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
-        cyprus.set_servo_position(2, .5)
-        sleep(1)
-        cyprus.set_servo_position(2, .1)
-        print("Run through one cycle of the perpetual motion machine")
+        for i in range(5):
+            s0.run(1, 500)
+            sleep(11)
+            s0.stop()
+            sleep(.25)
+            s0.run(0, 700)
+            sleep(1)
+            cyprus.set_pwm_values(1, period_value=100000, compare_value=25000, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
+            sleep(7)
+            s0.stop()
+            sleep(3.5)
+            cyprus.set_pwm_values(1, period_value=100000, compare_value=0, compare_mode=cyprus.LESS_THAN_OR_EQUAL)
+            cyprus.set_servo_position(2, .5)
+            sleep(1)
+            cyprus.set_servo_position(2, .1)
+            sleep(2)
+            print("Run through one cycle of the perpetual motion machine")
         
     def setRampSpeed(self, speed):
         print("Set the ramp speed and update slider text")
@@ -147,7 +162,10 @@ class MainScreen(Screen):
         cyprus.setup_servo(1)
         sleep(.1)
         cyprus.set_servo_position(2, .1)
-        print("Close gate, stop staircase and home ramp here")
+        s0.go_until_press(0, 50000)
+        if not s0.is_busy():
+            s0.set_as_home()
+        print(s0.get_position_in_units())
 
     def resetColors(self):
         self.ids.gate.color = YELLOW
