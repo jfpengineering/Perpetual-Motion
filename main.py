@@ -129,8 +129,10 @@ class MainScreen(Screen):
         self.rampSpeed.value = INIT_RAMP_SPEED
         
     def auto(self):
+        amount_str = input("How many times would you like the Perpetual Motion Machine to run?\n")
+        amount = int(amount_str)
         self.staircaseSpeed.disabled = True
-        for i in range(5):
+        for i in range(amount):
             s0.start_relative_move(2)
             sleep(.5)
             while s0.get_position_in_units() < 29:
